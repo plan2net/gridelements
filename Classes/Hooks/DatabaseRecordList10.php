@@ -66,9 +66,9 @@ class DatabaseRecordList10 implements RecordListHookInterface, RecordListGetTabl
      * @param int $pageId The record's page ID
      * @param string $additionalWhereClause An additional WHERE clause
      * @param string $selectedFieldsList Comma separated list of selected fields
-     * @param \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList $parentObject Parent \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList object
+     * @param \TYPO3\CMS\Backend\RecordList\DatabaseRecordList $parentObject Parent \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList object
      */
-    public function getDBlistQuery($table, $pageId, &$additionalWhereClause, &$selectedFieldsList, &$parentObject)
+    public function getDBlistQuery($table, $pageId, &$additionalWhereClause, &$selectedFieldsList, &$parentObject): void
     {
         if ($table === 'tt_content') {
             $additionalWhereClause .= ' AND colPos != -1 ';
@@ -144,7 +144,7 @@ class DatabaseRecordList10 implements RecordListHookInterface, RecordListGetTabl
      * @param array $theData
      * @param DatabaseRecordListXclass $parentObj
      */
-    public function checkChildren(string $table, array $row, int $level, array &$theData, DatabaseRecordListXclass $parentObj)
+    public function checkChildren(string $table, array $row, int $level, array &$theData, DatabaseRecordListXclass $parentObj): void
     {
         if ($table === 'tt_content' && $row['CType'] === 'gridelements_pi1') {
             $elementChildren = Helper::getInstance()->getChildren(
@@ -182,7 +182,7 @@ class DatabaseRecordList10 implements RecordListHookInterface, RecordListGetTabl
         int $level,
         string &$contentCollapseIcon,
         DatabaseRecordListXclass $parentObj
-    ) {
+    ): void {
         if ($data['_EXPAND_TABLE_'] === 'tt_content') {
             $expandTitle = htmlspecialchars($this->languageService->sL('LLL:EXT:gridelements/Resources/Private/Language/locallang_db.xlf:list.expandElement'));
             $collapseTitle = htmlspecialchars($this->languageService->sL('LLL:EXT:gridelements/Resources/Private/Language/locallang_db.xlf:list.collapseElement'));
@@ -228,7 +228,7 @@ class DatabaseRecordList10 implements RecordListHookInterface, RecordListGetTabl
      *
      * @param LanguageService $languageService
      */
-    public function setLanguageService(LanguageService $languageService)
+    public function setLanguageService(LanguageService $languageService): void
     {
         $this->languageService = $languageService;
     }

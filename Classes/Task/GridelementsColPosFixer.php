@@ -29,14 +29,10 @@ class GridelementsColPosFixer extends AbstractTask
                 -1,
                 true,
                 \PDO::PARAM_INT
-            )
-            ->where(
-                $queryBuilder->expr()->gt(
-                    'tx_gridelements_container',
-                    0
-                )
-            )
-            ->execute();
+            )->where($queryBuilder->expr()->gt(
+            'tx_gridelements_container',
+            0
+        ))->executeStatement();
         return true;
     }
 

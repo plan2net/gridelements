@@ -182,10 +182,7 @@ class GridelementsBackendLayoutPiFlexformDsFileUpdateWizard implements UpgradeWi
                     ExpressionBuilder::NEQ,
                     'CAST(' . $queryBuilder->quoteIdentifier($this->fieldToMigrate) . ' AS CHAR)'
                 )
-            )
-            ->orderBy('uid')
-            ->execute()
-            ->fetchAll();
+            )->orderBy('uid')->executeQuery()->fetchAllAssociative();
     }
 
     /**
@@ -223,16 +220,13 @@ class GridelementsBackendLayoutPiFlexformDsFileUpdateWizard implements UpgradeWi
 
                 $queryBuilder = $connectionPool->getQueryBuilderForTable('sys_file');
                 $queryBuilder->getRestrictions()->removeAll();
-                $existingFileRecord = $queryBuilder->select('uid')->from('sys_file')->where(
-                    $queryBuilder->expr()->eq(
-                        'sha1',
-                        $queryBuilder->createNamedParameter($fileSha1)
-                    ),
-                    $queryBuilder->expr()->eq(
-                        'storage',
-                        $queryBuilder->createNamedParameter($storageUid, PDO::PARAM_INT)
-                    )
-                )->execute()->fetch();
+                $existingFileRecord = $queryBuilder->select('uid')->from('sys_file')->where($queryBuilder->expr()->eq(
+                    'sha1',
+                    $queryBuilder->createNamedParameter($fileSha1)
+                ), $queryBuilder->expr()->eq(
+                    'storage',
+                    $queryBuilder->createNamedParameter($storageUid, PDO::PARAM_INT)
+                ))->executeQuery()->fetchAssociative();
 
                 // the file exists, the file does not have to be moved again
                 if (is_array($existingFileRecord)) {
@@ -288,7 +282,7 @@ class GridelementsBackendLayoutPiFlexformDsFileUpdateWizard implements UpgradeWi
                 ];
 
                 $queryBuilder = $connectionPool->getQueryBuilderForTable('sys_file_reference');
-                $queryBuilder->insert('sys_file_reference')->values($fields)->execute();
+                $queryBuilder->insert('sys_file_reference')->values($fields)->executeStatement();
                 ++$i;
             }
         }
@@ -302,7 +296,7 @@ class GridelementsBackendLayoutPiFlexformDsFileUpdateWizard implements UpgradeWi
                     'uid',
                     $queryBuilder->createNamedParameter($row['uid'], PDO::PARAM_INT)
                 )
-            )->set($this->fieldToMigrate, $i)->execute();
+            )->set($this->fieldToMigrate, $i)->executeStatement();
         }
     }
 }

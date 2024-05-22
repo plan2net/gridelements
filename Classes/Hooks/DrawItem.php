@@ -118,7 +118,7 @@ class DrawItem implements PageLayoutViewDrawItemHookInterface, SingletonInterfac
     /**
      * Processes the collapsed states of Gridelements columns and removes columns with 0 values
      */
-    public function cleanupCollapsedStatesInUC()
+    public function cleanupCollapsedStatesInUC(): void
     {
         $backendUser = $this->getBackendUser();
         if (is_array($backendUser->uc['moduleData']['page']['gridelementsCollapsedColumns'])) {
@@ -151,7 +151,7 @@ class DrawItem implements PageLayoutViewDrawItemHookInterface, SingletonInterfac
      * @param string $itemContent : The content of the item itself
      * @param array $row : The current data row for this item
      */
-    public function preProcess(PageLayoutView &$parentObject, &$drawItem, &$headerContent, &$itemContent, array &$row)
+    public function preProcess(PageLayoutView &$parentObject, &$drawItem, &$headerContent, &$itemContent, array &$row): void
     {
         if ($row['CType']) {
             $this->showHidden = (bool)$parentObject->tt_contentConfig['showHidden'];
@@ -470,16 +470,13 @@ class DrawItem implements PageLayoutViewDrawItemHookInterface, SingletonInterfac
             ),
         ];
         if (!$parentObject->tt_contentConfig['languageMode']) {
-            $constraints[] = $queryBuilder->expr()->orX(
-                $queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter(-1, PDO::PARAM_INT)),
-                $queryBuilder->expr()->eq(
-                    'sys_language_uid',
-                    $queryBuilder->createNamedParameter(
-                        (int)$parentObject->tt_contentConfig['sys_language_uid'],
-                        PDO::PARAM_INT
-                    )
+            $constraints[] = $queryBuilder->expr()->or($queryBuilder->expr()->eq('sys_language_uid', $queryBuilder->createNamedParameter(-1, PDO::PARAM_INT)), $queryBuilder->expr()->eq(
+                'sys_language_uid',
+                $queryBuilder->createNamedParameter(
+                    (int)$parentObject->tt_contentConfig['sys_language_uid'],
+                    PDO::PARAM_INT
                 )
-            );
+            ));
         } elseif ($row['sys_language_uid'] > 0) {
             $constraints[] = $queryBuilder->expr()->eq(
                 'sys_language_uid',
@@ -863,7 +860,7 @@ class DrawItem implements PageLayoutViewDrawItemHookInterface, SingletonInterfac
                         ''
                         // $parentObject->languageIconTitles[$language]['title']
                     ),
-                    FlashMessage::WARNING
+                    \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::WARNING
                 );
                 $service = GeneralUtility::makeInstance(FlashMessageService::class);
                 /** @var FlashMessageQueue $queue */
@@ -892,7 +889,7 @@ class DrawItem implements PageLayoutViewDrawItemHookInterface, SingletonInterfac
      *
      * @param LanguageService $languageService
      */
-    public function setLanguageService(LanguageService $languageService)
+    public function setLanguageService(LanguageService $languageService): void
     {
         $this->languageService = $languageService;
     }
@@ -1409,10 +1406,7 @@ class DrawItem implements PageLayoutViewDrawItemHookInterface, SingletonInterfac
                 )
             )
             ->orderBy('inSet')
-            ->addOrderBy('colPos')
-            ->addOrderBy('sorting')
-            ->execute()
-            ->fetchAll();
+            ->addOrderBy('colPos')->addOrderBy('sorting')->executeQuery()->fetchAllAssociative();
 
         foreach ($items as $item) {
             if (!empty($this->extentensionConfiguration['overlayShortcutTranslation']) && $language > 0) {
@@ -1455,10 +1449,7 @@ class DrawItem implements PageLayoutViewDrawItemHookInterface, SingletonInterfac
                         'uid',
                         $queryBuilder->createNamedParameter((int)$shortcutItem, PDO::PARAM_INT)
                     )
-                )
-                ->setMaxResults(1)
-                ->execute()
-                ->fetch();
+                )->setMaxResults(1)->executeQuery()->fetchAssociative();
 
             if (!empty($this->extentensionConfiguration['overlayShortcutTranslation']) && $language > 0) {
                 $translatedItem = BackendUtility::getRecordLocalization('tt_content', $item['uid'], $language);

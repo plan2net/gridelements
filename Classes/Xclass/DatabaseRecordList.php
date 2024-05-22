@@ -37,7 +37,7 @@ use UnexpectedValueException;
  * Class for rendering of Web>List module
  * @internal This class is a specific TYPO3 Backend implementation and is not part of the TYPO3's Core API.
  */
-class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList
+class DatabaseRecordList extends \TYPO3\CMS\Backend\RecordList\DatabaseRecordList
 {
     /**
      * @var array
@@ -267,7 +267,7 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\DatabaseRecord
                 && is_array($backendUser->uc['moduleData']['list']['gridelementsExpanded'])) {
                 $this->expandedGridelements = $backendUser->uc['moduleData']['list']['gridelementsExpanded'];
             }
-            $expandOverride = GeneralUtility::_GP('gridelementsExpand');
+            $expandOverride = $GLOBALS['TYPO3_REQUEST']->getParsedBody()['gridelementsExpand'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['gridelementsExpand'] ?? null;
             if (is_array($expandOverride)) {
                 foreach ($expandOverride as $expandContainer => $expandValue) {
                     if ($expandValue) {
@@ -282,9 +282,11 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\DatabaseRecord
                 $backendUser->uc['moduleData']['list']['gridelementsExpanded'] = $this->expandedGridelements;
                 // Save modified user uc
                 $backendUser->writeUC($backendUser->uc);
-                $returnUrl = GeneralUtility::sanitizeLocalUrl(GeneralUtility::_GP('returnUrl'));
+                $returnUrl = GeneralUtility::sanitizeLocalUrl($GLOBALS['TYPO3_REQUEST']->getParsedBody()['returnUrl'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['returnUrl'] ?? null);
                 if ($returnUrl !== '') {
-                    HttpUtility::redirect($returnUrl);
+                    
+                    $response = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\Psr\Http\Message\ResponseFactoryInterface::class)->createResponse(\TYPO3\CMS\Core\Utility\HttpUtility::HTTP_STATUS_303)->withAddedHeader('location', $returnUrl);
+                    throw new \TYPO3\CMS\Core\Http\PropagateResponseException($response);
                 }
             }
         }
@@ -631,7 +633,7 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\DatabaseRecord
             $theData = $hookObject->renderListHeader($table, $currentIdList, $theData, $this);
         }
 
-        $event = $this->eventDispatcher->dispatch(new ModifyRecordListHeaderColumnsEvent($theData, $table, $currentIdList, $this));
+        $event = $this->eventDispatcher->dispatch(new \TYPO3\CMS\Backend\RecordList\Event\ModifyRecordListHeaderColumnsEvent($theData, $table, $currentIdList, $this));
 
         // Create and return header table row:
         return $headerOutput . '<thead>' . $this->addElement($event->getColumns(), GeneralUtility::implodeAttributes($event->getHeaderAttributes(), true), 'th', 0, $table) . '</thead>';
@@ -725,7 +727,7 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\DatabaseRecord
                 }
             } elseif ($fCol === 'icon') {
                 $iconImg = '
-                    <span ' . BackendUtility::getRecordToolTip($row, $table) . ' ' . ($indent ? ' style="margin-left: ' . $indent . 'px;"' : '') . '>
+                    <span ' . ('title="' . \TYPO3\CMS\Backend\Utility\BackendUtility::getRecordIconAltText($row, $table) . '"') . ' ' . ($indent ? ' style="margin-left: ' . $indent . 'px;"' : '') . '>
                         ' . $this->iconFactory->getIconForRecord($table, $row, Icon::SIZE_SMALL)->render() . '
                     </span>';
                 $theData[$fCol] = ($this->clickMenuEnabled && !$this->isRecordDeletePlaceholder($row)) ? BackendUtility::wrapClickMenuOnIcon($iconImg, $table, $row['uid']) : $iconImg;
@@ -886,7 +888,7 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\DatabaseRecord
 
         if (count($data) > 1) {
             if (!empty($data['_EXPANDABLE_']) && !$l10nParent) {
-                $sortField = GeneralUtility::_GP('sortField') ? GeneralUtility::_GP('sortField') . ':' . (int)GeneralUtility::_GP('sortRev') : '';
+                $sortField = $GLOBALS['TYPO3_REQUEST']->getParsedBody()['sortField'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['sortField'] ?? null ? ($GLOBALS['TYPO3_REQUEST']->getParsedBody()['sortField'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['sortField'] ?? null) . ':' . (int)($GLOBALS['TYPO3_REQUEST']->getParsedBody()['sortRev'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['sortRev'] ?? null) : '';
                 /**
                  * @hook contentCollapseIcon
                  * @date 2014-02-11
@@ -1391,7 +1393,7 @@ class DatabaseRecordList extends \TYPO3\CMS\Recordlist\RecordList\DatabaseRecord
         $this->makeClip($table, $row, $cells);
 
         $event = $this->eventDispatcher->dispatch(
-            new ModifyRecordListRecordActionsEvent($cells, $table, $row, $this)
+            new \TYPO3\CMS\Backend\RecordList\Event\ModifyRecordListRecordActionsEvent($cells, $table, $row, $this)
         );
 
         $output = '';

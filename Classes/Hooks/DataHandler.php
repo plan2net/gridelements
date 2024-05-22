@@ -58,7 +58,7 @@ class DataHandler implements SingletonInterface
         string $table,
         string $id,
         \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
-    ) {
+    ): void {
         if (($table === 'tt_content' || $table === 'pages') && !$parentObj->isImporting) {
             /** @var PreProcessFieldArray $hook */
             $hook = GeneralUtility::makeInstance(PreProcessFieldArray::class);
@@ -79,7 +79,7 @@ class DataHandler implements SingletonInterface
         string &$id,
         array &$fieldArray,
         \TYPO3\CMS\Core\DataHandling\DataHandler $parentObj
-    ) {
+    ): void {
         // create a copy of $id which is passed by reference
         $recordUid = $id;
         if (($table === 'tt_content' || $table === 'pages') && !$parentObj->isImporting) {
@@ -115,7 +115,7 @@ class DataHandler implements SingletonInterface
         bool &$commandIsProcessed,
         \TYPO3\CMS\Core\DataHandling\DataHandler &$parentObj,
         $pasteUpdate
-    ) {
+    ): void {
         if (!$parentObj->isImporting) {
             /** @var ProcessCmdmap $hook */
             $hook = GeneralUtility::makeInstance(ProcessCmdmap::class);

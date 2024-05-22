@@ -166,7 +166,7 @@ class Gridelements extends ContentObjectRenderer
      * @param array|null $child
      * @deprecated use the recommended static file based on DataProcessing instead of a USER cObject, will be removed in Gridelements v11.0
      */
-    public function initPluginFlexForm(string $field = 'pi_flexform', array &$child = null)
+    public function initPluginFlexForm(string $field = 'pi_flexform', array &$child = null): void
     {
         $this->flexFormTools = GeneralUtility::makeInstance(FlexFormTools::class);
         // Converting flexform data into array:
@@ -198,7 +198,7 @@ class Gridelements extends ContentObjectRenderer
      * @param array $child
      * @deprecated use the recommended static file based on DataProcessing instead of a USER cObject, will be removed in Gridelements v12.0
      */
-    public function getPluginFlexFormData(array &$child = [])
+    public function getPluginFlexFormData(array &$child = []): void
     {
         if (!empty($child)) {
             $cObjData = $child;
@@ -246,28 +246,23 @@ class Gridelements extends ContentObjectRenderer
      * @throws DBALException
      * @deprecated use the recommended static file based on DataProcessing instead of a USER cObject, will be removed in Gridelements v12.0
      */
-    public function getChildren(int $element = 0, int $pid = 0, string $csvColumns = '')
+    public function getChildren(int $element = 0, int $pid = 0, string $csvColumns = ''): void
     {
         if (!$element || $csvColumns === '') {
             return;
         }
         $csvColumns = GeneralUtility::intExplode(',', $csvColumns);
         $queryBuilder = $this->getQueryBuilder();
-        $where = $queryBuilder->expr()->andX(
-            $queryBuilder->expr()->eq(
-                'tx_gridelements_container',
-                $queryBuilder->createNamedParameter($element, PDO::PARAM_INT)
-            ),
-            $queryBuilder->expr()->neq('colPos', $queryBuilder->createNamedParameter(-2, PDO::PARAM_INT)),
-            $queryBuilder->expr()->eq(
-                'pid',
-                $queryBuilder->createNamedParameter($pid, PDO::PARAM_INT)
-            ),
-            $queryBuilder->expr()->in(
-                'tx_gridelements_columns',
-                $queryBuilder->createNamedParameter($csvColumns, Connection::PARAM_INT_ARRAY)
-            )
-        );
+        $where = $queryBuilder->expr()->and($queryBuilder->expr()->eq(
+            'tx_gridelements_container',
+            $queryBuilder->createNamedParameter($element, PDO::PARAM_INT)
+        ), $queryBuilder->expr()->neq('colPos', $queryBuilder->createNamedParameter(-2, PDO::PARAM_INT)), $queryBuilder->expr()->eq(
+            'pid',
+            $queryBuilder->createNamedParameter($pid, PDO::PARAM_INT)
+        ), $queryBuilder->expr()->in(
+            'tx_gridelements_columns',
+            $queryBuilder->createNamedParameter($csvColumns, Connection::PARAM_INT_ARRAY)
+        ));
         $translationOverlay = [];
         $translationNoOverlay = [];
 
@@ -277,56 +272,43 @@ class Gridelements extends ContentObjectRenderer
                     $element = (int)$this->cObj->data['_LOCALIZED_UID'];
                 }
                 if ($element) {
-                    $translationOverlay = $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->eq(
-                            'tx_gridelements_container',
-                            $queryBuilder->createNamedParameter($element, PDO::PARAM_INT)
-                        ),
-                        $queryBuilder->expr()->neq('colPos', $queryBuilder->createNamedParameter(-2, PDO::PARAM_INT)),
-                        $queryBuilder->expr()->eq(
-                            'pid',
-                            $queryBuilder->createNamedParameter($pid, PDO::PARAM_INT)
-                        ),
-                        $queryBuilder->expr()->in(
-                            'tx_gridelements_columns',
-                            $queryBuilder->createNamedParameter($csvColumns, Connection::PARAM_INT_ARRAY)
-                        ),
-                        $queryBuilder->expr()->in(
-                            'sys_language_uid',
-                            $queryBuilder->createNamedParameter(
-                                [-1, $this->languageAspect->getContentId()],
-                                Connection::PARAM_INT_ARRAY
-                            )
-                        ),
-                        $queryBuilder->expr()->eq(
-                            'l18n_parent',
-                            $queryBuilder->createNamedParameter(0, PDO::PARAM_INT)
-                        )
-                    );
-                }
-            } else {
-                $translationNoOverlay = $queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq(
+                    $translationOverlay = $queryBuilder->expr()->and($queryBuilder->expr()->eq(
                         'tx_gridelements_container',
                         $queryBuilder->createNamedParameter($element, PDO::PARAM_INT)
-                    ),
-                    $queryBuilder->expr()->neq('colPos', $queryBuilder->createNamedParameter(-2, PDO::PARAM_INT)),
-                    $queryBuilder->expr()->eq(
+                    ), $queryBuilder->expr()->neq('colPos', $queryBuilder->createNamedParameter(-2, PDO::PARAM_INT)), $queryBuilder->expr()->eq(
                         'pid',
                         $queryBuilder->createNamedParameter($pid, PDO::PARAM_INT)
-                    ),
-                    $queryBuilder->expr()->in(
+                    ), $queryBuilder->expr()->in(
                         'tx_gridelements_columns',
                         $queryBuilder->createNamedParameter($csvColumns, Connection::PARAM_INT_ARRAY)
-                    ),
-                    $queryBuilder->expr()->in(
+                    ), $queryBuilder->expr()->in(
                         'sys_language_uid',
                         $queryBuilder->createNamedParameter(
                             [-1, $this->languageAspect->getContentId()],
                             Connection::PARAM_INT_ARRAY
                         )
+                    ), $queryBuilder->expr()->eq(
+                        'l18n_parent',
+                        $queryBuilder->createNamedParameter(0, PDO::PARAM_INT)
+                    ));
+                }
+            } else {
+                $translationNoOverlay = $queryBuilder->expr()->and($queryBuilder->expr()->eq(
+                    'tx_gridelements_container',
+                    $queryBuilder->createNamedParameter($element, PDO::PARAM_INT)
+                ), $queryBuilder->expr()->neq('colPos', $queryBuilder->createNamedParameter(-2, PDO::PARAM_INT)), $queryBuilder->expr()->eq(
+                    'pid',
+                    $queryBuilder->createNamedParameter($pid, PDO::PARAM_INT)
+                ), $queryBuilder->expr()->in(
+                    'tx_gridelements_columns',
+                    $queryBuilder->createNamedParameter($csvColumns, Connection::PARAM_INT_ARRAY)
+                ), $queryBuilder->expr()->in(
+                    'sys_language_uid',
+                    $queryBuilder->createNamedParameter(
+                        [-1, $this->languageAspect->getContentId()],
+                        Connection::PARAM_INT_ARRAY
                     )
-                );
+                ));
             }
         }
 
@@ -334,14 +316,8 @@ class Gridelements extends ContentObjectRenderer
             ->select('*')
             ->from('tt_content')
             ->where(
-                $queryBuilder->expr()->orX(
-                    $where,
-                    $translationOverlay,
-                    $translationNoOverlay
-                )
-            )
-            ->orderBy('sorting', 'ASC')
-            ->execute();
+                $queryBuilder->expr()->or($where, $translationOverlay, $translationNoOverlay)
+            )->orderBy('sorting', 'ASC')->executeQuery();
 
         $this->cObj->data['tx_gridelements_view_children'] = [];
         while ($child = $children->fetch()) {
@@ -418,7 +394,7 @@ class Gridelements extends ContentObjectRenderer
      * @param array $sortColumns An Array of column positions within the grid container in the order they got in the grid setup
      * @deprecated use the recommended static file based on DataProcessing instead of a USER cObject, will be removed in Gridelements v12.0
      */
-    public function renderChildrenIntoParentColumns(array $typoScriptSetup = [], array $sortColumns = [])
+    public function renderChildrenIntoParentColumns(array $typoScriptSetup = [], array $sortColumns = []): void
     {
         // first we have to make a backup copy of the original data array
         // and we have to modify the depth counter to avoid stopping too early
@@ -574,7 +550,7 @@ class Gridelements extends ContentObjectRenderer
         array &$parentGridData,
         array &$parentRecordNumbers,
         array $typoScriptSetup = []
-    ) {
+    ): void {
         $column_number = (int)($child['tx_gridelements_columns'] ?? 0);
         $columnKey = $column_number . '.';
         $columnSetupKey = isset($typoScriptSetup['columns.'][$columnKey]) ? $columnKey : 'default.';
@@ -652,7 +628,7 @@ class Gridelements extends ContentObjectRenderer
      * renders a recursive pidList to reference content from a list of pages
      * @deprecated use the recommended static file based on DataProcessing instead of a USER cObject, will be removed in Gridelements v12.0
      */
-    public function user_getTreeList()
+    public function user_getTreeList(): void
     {
         $pidList = !empty($this->getTSFE()->register['tt_content_shortcut_recursive'])
             ? $this->cObj->getTreeList(

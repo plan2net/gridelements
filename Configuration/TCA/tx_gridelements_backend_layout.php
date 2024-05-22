@@ -8,7 +8,6 @@ return [
         'label' => 'title',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
-        'cruser_id' => 'cruser_id',
         'versioningWS' => true,
         'origUid' => 't3_origuid',
         'sortby' => 'sorting',
@@ -38,7 +37,7 @@ return [
                 'type' => 'check',
                 'items' => [
                     '1' => [
-                        '0' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:hidden.I.0',
+                        'label' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:hidden.I.0',
                     ],
                 ],
             ],
@@ -50,7 +49,7 @@ return [
                 'type' => 'input',
                 'size' => '25',
                 'max' => '256',
-                'eval' => 'required',
+                'required' => true,
             ],
         ],
         'alias' => [
@@ -78,7 +77,7 @@ return [
                 'type' => 'check',
                 'items' => [
                     '1' => [
-                        '0' => $l10n . ':tx_gridelements_backend_layout.horizontal.I.0',
+                        'label' => $l10n . ':tx_gridelements_backend_layout.horizontal.I.0',
                     ],
                 ],
             ],
@@ -86,16 +85,15 @@ return [
         'icon' => [
             'exclude' => 1,
             'label' => $l10n . ':tx_gridelements_backend_layout.icon',
-            'config' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig(
-                'icon',
-                [
-                    'maxitems' => 1,
-                    'appearance' => [
-                        'createNewRelationLinkTitle' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:images.addFileReference',
-                    ],
+            'config' => [
+                ### !!! Watch out for fieldName different from columnName
+                'type' => 'file',
+                'allowed' => $GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'],
+                'maxitems' => 1,
+                'appearance' => [
+                    'createNewRelationLinkTitle' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:images.addFileReference',
                 ],
-                $GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext']
-            ),
+            ],
         ],
         'frame' => [
             'exclude' => 1,
@@ -105,24 +103,24 @@ return [
                 'renderType' => 'selectSingle',
                 'items' => [
                     [
-                        $l10n . ':tx_gridelements_backend_layout.frame.I.0',
-                        '0',
+                        'label' => $l10n . ':tx_gridelements_backend_layout.frame.I.0',
+                        'value' => '0',
                     ],
                     [
-                        $l10n . ':tx_gridelements_backend_layout.frame.I.-1',
-                        '-1',
+                        'label' => $l10n . ':tx_gridelements_backend_layout.frame.I.-1',
+                        'value' => '-1',
                     ],
                     [
-                        $l10n . ':tx_gridelements_backend_layout.frame.I.1',
-                        '1',
+                        'label' => $l10n . ':tx_gridelements_backend_layout.frame.I.1',
+                        'value' => '1',
                     ],
                     [
-                        $l10n . ':tx_gridelements_backend_layout.frame.I.2',
-                        '2',
+                        'label' => $l10n . ':tx_gridelements_backend_layout.frame.I.2',
+                        'value' => '2',
                     ],
                     [
-                        $l10n . ':tx_gridelements_backend_layout.frame.I.3',
-                        '3',
+                        'label' => $l10n . ':tx_gridelements_backend_layout.frame.I.3',
+                        'value' => '3',
                     ],
                 ],
                 'size' => 1,
@@ -136,7 +134,7 @@ return [
                 'type' => 'check',
                 'items' => [
                     '1' => [
-                        '0' => 'LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.enabled',
+                        'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_core.xlf:labels.enabled',
                     ],
                 ],
             ],
@@ -164,16 +162,15 @@ return [
         'pi_flexform_ds_file' => [
             'exclude' => 1,
             'label' => $l10n . ':tx_gridelements_backend_layout.pi_flexform_ds_file',
-            'config' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig(
-                'pi_flexform_ds_file',
-                [
-                    'maxitems' => 1,
-                    'appearance' => [
-                        'createNewRelationLinkTitle' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:media.addFileReference',
-                    ],
+            'config' => [
+                ### !!! Watch out for fieldName different from columnName
+                'type' => 'file',
+                'allowed' => 'xml',
+                'maxitems' => 1,
+                'appearance' => [
+                    'createNewRelationLinkTitle' => 'LLL:EXT:frontend/Resources/Private/Language/locallang_ttc.xlf:media.addFileReference',
                 ],
-                'xml'
-            ),
+            ],
         ],
     ],
     'palettes' => [

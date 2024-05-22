@@ -45,7 +45,7 @@ use UnexpectedValueException;
 /**
  * Class for rendering of Web>List module
  */
-class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseRecordList
+class DatabaseRecordList10 extends \TYPO3\CMS\Backend\RecordList\DatabaseRecordList
 {
     /**
      * Count of record columns in view
@@ -200,10 +200,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
             // Only restrict to the default language if no search request is in place
             // And if only translations should be shown
             if ($this->searchString === '' && !$this->showOnlyTranslatedRecords) {
-                $addWhere = (string)$queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->lte($GLOBALS['TCA'][$table]['ctrl']['languageField'], 0),
-                    $queryBuilder->expr()->eq($GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'], 0)
-                );
+                $addWhere = (string)$queryBuilder->expr()->or($queryBuilder->expr()->lte($GLOBALS['TCA'][$table]['ctrl']['languageField'], 0), $queryBuilder->expr()->eq($GLOBALS['TCA'][$table]['ctrl']['transOrigPointerField'], 0));
             }
         }
         // Cleaning up:
@@ -276,7 +273,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
                 FlashMessage::class,
                 $message,
                 $messageTitle,
-                FlashMessage::WARNING,
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::WARNING,
                 true
             );
             /** @var FlashMessageService $flashMessageService */
@@ -307,9 +304,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
         }
         $additionalConstraints = empty($addWhere) ? [] : [QueryHelper::stripLogicalOperatorPrefix($addWhere)];
         if ($table === 'tt_content') {
-            $additionalConstraints[] = (string)$queryBuilder->expr()->andX(
-                $queryBuilder->expr()->neq('colPos', -1)
-            );
+            $additionalConstraints[] = (string)$queryBuilder->expr()->and($queryBuilder->expr()->neq('colPos', -1));
         }
         $selFieldList = GeneralUtility::trimExplode(',', $selFieldList, true);
 
@@ -428,7 +423,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
                 if (is_array($backendUser->uc['moduleData']['list']['gridelementsExpanded'])) {
                     $this->expandedGridelements = $backendUser->uc['moduleData']['list']['gridelementsExpanded'];
                 }
-                $expandOverride = GeneralUtility::_GP('gridelementsExpand');
+                $expandOverride = $GLOBALS['TYPO3_REQUEST']->getParsedBody()['gridelementsExpand'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['gridelementsExpand'] ?? null;
                 if (is_array($expandOverride)) {
                     foreach ($expandOverride as $expandContainer => $expandValue) {
                         if ($expandValue) {
@@ -440,9 +435,11 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
                     $backendUser->uc['moduleData']['list']['gridelementsExpanded'] = $this->expandedGridelements;
                     // Save modified user uc
                     $backendUser->writeUC($backendUser->uc);
-                    $returnUrl = GeneralUtility::sanitizeLocalUrl(GeneralUtility::_GP('returnUrl'));
+                    $returnUrl = GeneralUtility::sanitizeLocalUrl($GLOBALS['TYPO3_REQUEST']->getParsedBody()['returnUrl'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['returnUrl'] ?? null);
                     if ($returnUrl !== '') {
-                        HttpUtility::redirect($returnUrl);
+                        
+                        $response = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\Psr\Http\Message\ResponseFactoryInterface::class)->createResponse(\TYPO3\CMS\Core\Utility\HttpUtility::HTTP_STATUS_303)->withAddedHeader('location', $returnUrl);
+                        throw new \TYPO3\CMS\Core\Http\PropagateResponseException($response);
                     }
                 }
             }
@@ -564,10 +561,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
 
                                         $tmpRow = $queryBuilder
                                                 ->select(...$selFieldList)
-                                                ->from($table)
-                                                ->andWhere(...$predicates)
-                                                ->execute()
-                                                ->fetch();
+                                                ->from($table)->andWhere(...$predicates)->executeQuery()->fetchAssociative();
 
                                         $lRow = is_array($tmpRow) ? $tmpRow : $lRow;
                                     }
@@ -733,7 +727,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
         // Incr. counter.
         $this->counter++;
         // The icon with link
-        $toolTip = BackendUtility::getRecordToolTip($row, $table);
+        $toolTip = 'title="' . \TYPO3\CMS\Backend\Utility\BackendUtility::getRecordIconAltText($row, $table) . '"';
         $additionalStyle = $indent ? ' style="margin-left: ' . $indent . 'px;"' : '';
         $iconImg = '<span ' . $toolTip . ' ' . $additionalStyle . '>'
                 . $this->iconFactory->getIconForRecord($table, $row, Icon::SIZE_SMALL)->render()
@@ -984,10 +978,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
 
                         $tmpRow = $queryBuilder
                                 ->select(...$this->selFieldList)
-                                ->from($table)
-                                ->andWhere(...$predicates)
-                                ->execute()
-                                ->fetch();
+                                ->from($table)->andWhere(...$predicates)->executeQuery()->fetchAssociative();
 
                         $lRow = is_array($tmpRow) ? $tmpRow : $lRow;
                     }
@@ -1096,11 +1087,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
                 $params .= '&overrideVals[pages][sys_language_uid]=' . (int)$row[$GLOBALS['TCA']['pages']['ctrl']['languageField']];
                 $iconIdentifier = 'actions-page-open';
             }
-            $editAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars(BackendUtility::editOnClick(
-                $params,
-                '',
-                -1
-            ))
+            $editAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars(\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Routing\UriBuilder::class)->buildUriFromRoute('record_edit') . $params . '&returnUrl=' . rawurlencode(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REQUEST_URI')))
                     . '" title="' . htmlspecialchars($this->getLanguageService()->getLL('edit')) . '">' . $this->iconFactory->getIcon(
                         $iconIdentifier,
                         Icon::SIZE_SMALL
@@ -1174,11 +1161,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
                         if ($GLOBALS['TCA'][$table]['ctrl']['sortby']) {
                             $titleLabel .= ($table === 'pages' ? 'Page' : 'Record');
                         }
-                        $newAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars(BackendUtility::editOnClick(
-                            $params,
-                            '',
-                            -1
-                        ))
+                        $newAction = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars(\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Routing\UriBuilder::class)->buildUriFromRoute('record_edit') . $params . '&returnUrl=' . rawurlencode(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REQUEST_URI')))
                                 . '" title="' . htmlspecialchars($this->getLanguageService()->getLL($titleLabel)) . '">'
                                 . $icon->render() . '</a>';
                         $this->addActionToCellGroup($cells, $newAction, 'new');
@@ -1432,7 +1415,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
             $colsp = ' colspan="' . ($level + 1) . '"';
 
             if ($data['_EXPANDABLE_']) {
-                $sortField = GeneralUtility::_GP('sortField') ? GeneralUtility::_GP('sortField') . ':' . (int)GeneralUtility::_GP('sortRev') : '';
+                $sortField = $GLOBALS['TYPO3_REQUEST']->getParsedBody()['sortField'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['sortField'] ?? null ? ($GLOBALS['TYPO3_REQUEST']->getParsedBody()['sortField'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['sortField'] ?? null) . ':' . (int)($GLOBALS['TYPO3_REQUEST']->getParsedBody()['sortRev'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['sortRev'] ?? null) : '';
                 $contentCollapseIcon = '';
                 /**
                  * @hook contentCollapseIcon
@@ -1719,11 +1702,7 @@ class DatabaseRecordList10 extends \TYPO3\CMS\Recordlist\RecordList\DatabaseReco
                                         . $spriteIcon->render() . '</a>';
                             } else {
                                 $params = '&edit[' . $table . '][' . $this->id . ']=new';
-                                $icon = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars(BackendUtility::editOnClick(
-                                    $params,
-                                    '',
-                                    -1
-                                ))
+                                $icon = '<a class="btn btn-default" href="#" onclick="' . htmlspecialchars(\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Routing\UriBuilder::class)->buildUriFromRoute('record_edit') . $params . '&returnUrl=' . rawurlencode(\TYPO3\CMS\Core\Utility\GeneralUtility::getIndpEnv('REQUEST_URI')))
                                         . '" title="' . htmlspecialchars($lang->getLL('new')) . '">' . $spriteIcon->render() . '</a>';
                             }
                         }

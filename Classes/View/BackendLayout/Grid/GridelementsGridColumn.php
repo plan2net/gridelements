@@ -158,7 +158,7 @@ class GridelementsGridColumn extends GridColumn
         return $this->gridContainerId;
     }
 
-    public function setActive()
+    public function setActive(): void
     {
         $this->active = true;
     }
@@ -166,7 +166,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param bool $collapsed
      */
-    public function setCollapsed(bool $collapsed)
+    public function setCollapsed(bool $collapsed): void
     {
         $this->collapsed = $collapsed;
     }
@@ -182,7 +182,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param array $allowed
      */
-    public function setAllowed(array $allowed)
+    public function setAllowed(array $allowed): void
     {
         $this->allowed = $allowed;
     }
@@ -198,7 +198,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param string $allowedContentType
      */
-    public function setAllowedContentType(string $allowedContentType)
+    public function setAllowedContentType(string $allowedContentType): void
     {
         $this->allowedContentType = $allowedContentType;
     }
@@ -214,7 +214,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param string $allowedListType
      */
-    public function setAllowedListType(string $allowedListType)
+    public function setAllowedListType(string $allowedListType): void
     {
         $this->allowedListType = $allowedListType;
     }
@@ -230,7 +230,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param string $allowedGridType
      */
-    public function setAllowedGridType(string $allowedGridType)
+    public function setAllowedGridType(string $allowedGridType): void
     {
         $this->allowedGridType = $allowedGridType;
     }
@@ -246,7 +246,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param array $disallowed
      */
-    public function setDisallowed(array $disallowed)
+    public function setDisallowed(array $disallowed): void
     {
         $this->disallowed = $disallowed;
     }
@@ -262,7 +262,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param string $disallowedContentType
      */
-    public function setDisallowedContentType(string $disallowedContentType)
+    public function setDisallowedContentType(string $disallowedContentType): void
     {
         $this->disallowedContentType = $disallowedContentType;
     }
@@ -278,7 +278,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param string $disallowedListType
      */
-    public function setDisallowedListType(string $disallowedListType)
+    public function setDisallowedListType(string $disallowedListType): void
     {
         $this->disallowedListType = $disallowedListType;
     }
@@ -294,7 +294,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param string $disallowedGridType
      */
-    public function setDisallowedGridType(string $disallowedGridType)
+    public function setDisallowedGridType(string $disallowedGridType): void
     {
         $this->disallowedGridType = $disallowedGridType;
     }
@@ -310,7 +310,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param int $maxitems
      */
-    public function setMaxitems(int $maxitems)
+    public function setMaxitems(int $maxitems): void
     {
         $this->maxitems = $maxitems;
     }
@@ -334,7 +334,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param bool $disableNewContent
      */
-    public function setDisableNewContent(bool $disableNewContent)
+    public function setDisableNewContent(bool $disableNewContent): void
     {
         $this->disableNewContent = $disableNewContent;
     }
@@ -350,7 +350,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param bool $tooManyItems
      */
-    public function setTooManyItems(bool $tooManyItems)
+    public function setTooManyItems(bool $tooManyItems): void
     {
         $this->tooManyItems = $tooManyItems;
     }
@@ -366,7 +366,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param string $maxItemsClass
      */
-    public function setMaxItemsClass(string $maxItemsClass)
+    public function setMaxItemsClass(string $maxItemsClass): void
     {
         $this->maxItemsClass = $maxItemsClass;
     }
@@ -382,7 +382,7 @@ class GridelementsGridColumn extends GridColumn
     /**
      * @param array $layoutColumns
      */
-    public function setRestrictions(array $layoutColumns)
+    public function setRestrictions(array $layoutColumns): void
     {
         if (empty($layoutColumns)) {
             return;

@@ -70,6 +70,10 @@ abstract class AbstractDataHandler
      * @var LayoutSetup
      */
     protected LayoutSetup $layoutSetup;
+    public function __construct(\GridElementsTeam\Gridelements\Backend\LayoutSetup $layoutSetup)
+    {
+        $this->layoutSetup = $layoutSetup;
+    }
 
     /**
      * initializes this class
@@ -78,7 +82,7 @@ abstract class AbstractDataHandler
      * @param string $uidPid : The uid of the record or page we are currently working on
      * @param DataHandler $dataHandler
      */
-    public function init(string $table, string $uidPid, DataHandler $dataHandler)
+    public function init(string $table, string $uidPid, DataHandler $dataHandler): void
     {
         $this->setTable($table);
         if ($table === 'tt_content' && (int)$uidPid < 0) {
@@ -107,7 +111,7 @@ abstract class AbstractDataHandler
      *
      * @param int $contentUid
      */
-    public function setContentUid(int $contentUid)
+    public function setContentUid(int $contentUid): void
     {
         $this->contentUid = $contentUid;
     }
@@ -117,19 +121,9 @@ abstract class AbstractDataHandler
      *
      * @param DataHandler $dataHandler
      */
-    public function setTceMain(DataHandler $dataHandler)
+    public function setTceMain(DataHandler $dataHandler): void
     {
         $this->dataHandler = $dataHandler;
-    }
-
-    /**
-     * inject layout setup
-     *
-     * @param LayoutSetup $layoutSetup
-     */
-    public function injectLayoutSetup(LayoutSetup $layoutSetup)
-    {
-        $this->layoutSetup = $layoutSetup;
     }
 
     /**
@@ -147,7 +141,7 @@ abstract class AbstractDataHandler
      *
      * @param int $pageUid
      */
-    public function setPageUid(int $pageUid)
+    public function setPageUid(int $pageUid): void
     {
         $this->pageUid = $pageUid;
     }
@@ -157,26 +151,21 @@ abstract class AbstractDataHandler
      * via 'Discard' or 'Publish' commands
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function cleanupWorkspacesAfterFinalizing()
+    public function cleanupWorkspacesAfterFinalizing(): void
     {
         $queryBuilder = $this->getQueryBuilder();
 
         $constraints = [
-            $queryBuilder->expr()->andX(
-                $queryBuilder->expr()->eq(
-                    'pid',
-                    $queryBuilder->createNamedParameter(-1, PDO::PARAM_INT)
-                ),
-                $queryBuilder->expr()->eq(
-                    't3ver_wsid',
-                    $queryBuilder->createNamedParameter(0, PDO::PARAM_INT)
-                )
-            ),
+            $queryBuilder->expr()->and($queryBuilder->expr()->eq(
+                'pid',
+                $queryBuilder->createNamedParameter(-1, PDO::PARAM_INT)
+            ), $queryBuilder->expr()->eq(
+                't3ver_wsid',
+                $queryBuilder->createNamedParameter(0, PDO::PARAM_INT)
+            )),
         ];
 
-        $queryBuilder->delete('tt_content')
-            ->where(...$constraints)
-            ->execute();
+        $queryBuilder->delete('tt_content')->where(...$constraints)->executeStatement();
     }
 
     /**
@@ -205,7 +194,7 @@ abstract class AbstractDataHandler
      * @param int $uid
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function checkAndUpdateTranslatedElements(int $uid)
+    public function checkAndUpdateTranslatedElements(int $uid): void
     {
         if ($uid <= 0) {
             return;
@@ -223,10 +212,7 @@ abstract class AbstractDataHandler
             ->from('tt_content')
             ->where(
                 $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($uid, PDO::PARAM_INT))
-            )
-            ->setMaxResults(1)
-            ->execute()
-            ->fetch();
+            )->setMaxResults(1)->executeQuery()->fetchAssociative();
         if (!empty($currentValues['l18n_parent'])) {
             $originalUid = (int)$currentValues['uid'];
             $queryBuilder = $this->getQueryBuilder();
@@ -245,10 +231,7 @@ abstract class AbstractDataHandler
                         'uid',
                         $queryBuilder->createNamedParameter((int)$currentValues['l18n_parent'], PDO::PARAM_INT)
                     )
-                )
-                ->setMaxResults(1)
-                ->execute()
-                ->fetch();
+                )->setMaxResults(1)->executeQuery()->fetchAssociative();
 
             if (is_array($currentValues)) {
                 $updateArray = $currentValues;
@@ -275,14 +258,10 @@ abstract class AbstractDataHandler
                 'colPos',
                 'l18n_parent'
             )
-            ->from('tt_content')
-            ->where(
-                $queryBuilder->expr()->eq(
-                    'l18n_parent',
-                    $queryBuilder->createNamedParameter((int)$currentValues['uid'], PDO::PARAM_INT)
-                )
-            )
-            ->execute();
+            ->from('tt_content')->where($queryBuilder->expr()->eq(
+            'l18n_parent',
+            $queryBuilder->createNamedParameter((int)$currentValues['uid'], PDO::PARAM_INT)
+        ))->executeQuery();
         $translatedElements = [];
         while ($translatedElement = $translatedElementQuery->fetch()) {
             $translatedElements[$translatedElement['uid']] = $translatedElement;
@@ -295,21 +274,16 @@ abstract class AbstractDataHandler
             $queryBuilder = $this->getQueryBuilder();
             $translatedContainerQuery = $queryBuilder
                 ->select('uid', 'sys_language_uid')
-                ->from('tt_content')
-                ->where(
-                    $queryBuilder->expr()->eq(
-                        'l18n_parent',
-                        $queryBuilder->createNamedParameter(
-                            (int)$currentValues['tx_gridelements_container'],
-                            PDO::PARAM_INT
-                        )
-                    ),
-                    $queryBuilder->expr()->eq(
-                        't3ver_oid',
-                        $queryBuilder->createNamedParameter(0, PDO::PARAM_INT)
-                    )
+                ->from('tt_content')->where($queryBuilder->expr()->eq(
+                'l18n_parent',
+                $queryBuilder->createNamedParameter(
+                    (int)$currentValues['tx_gridelements_container'],
+                    PDO::PARAM_INT
                 )
-                ->execute();
+            ), $queryBuilder->expr()->eq(
+                't3ver_oid',
+                $queryBuilder->createNamedParameter(0, PDO::PARAM_INT)
+            ))->executeQuery();
             while ($translatedContainer = $translatedContainerQuery->fetch()) {
                 $translatedContainers[$translatedContainer['sys_language_uid']] = $translatedContainer;
             }
@@ -384,18 +358,13 @@ abstract class AbstractDataHandler
      * @param array $containerUpdateArray
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function doGridContainerUpdate(array $containerUpdateArray = [], $action = '')
+    public function doGridContainerUpdate(array $containerUpdateArray = [], $action = ''): void
     {
         if (is_array($containerUpdateArray) && !empty($containerUpdateArray)) {
             $queryBuilder = $this->getQueryBuilder();
             $currentContainers = $queryBuilder
                 ->select('uid', 'tx_gridelements_children')
-                ->from('tt_content')
-                ->where(
-                    $queryBuilder->expr()->in('uid', implode(',', array_keys($containerUpdateArray)))
-                )
-                ->execute()
-                ->fetchAll();
+                ->from('tt_content')->where($queryBuilder->expr()->in('uid', implode(',', array_keys($containerUpdateArray))))->executeQuery()->fetchAllAssociative();
             if (!empty($currentContainers)) {
                 foreach ($currentContainers as $fieldArray) {
                     $fieldArray['tx_gridelements_children'] = (int)$fieldArray['tx_gridelements_children'] + (int)$containerUpdateArray[$fieldArray['uid']];
@@ -436,7 +405,7 @@ abstract class AbstractDataHandler
      *
      * @param string $table
      */
-    public function setTable(string $table)
+    public function setTable(string $table): void
     {
         $this->table = $table;
     }

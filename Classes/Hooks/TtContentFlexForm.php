@@ -52,7 +52,7 @@ class TtContentFlexForm
     {
         if ($tableName === 'tt_content' && $fieldName === 'pi_flexform' && $row['CType'] === 'gridelements_pi1') {
             if (!empty($row['tx_gridelements_backend_layout']) && !empty($row['uid']) && !empty($row['pid'])) {
-                if (VersionNumberUtility::convertVersionNumberToInteger(TYPO3_version) < 11000000) {
+                if (VersionNumberUtility::convertVersionNumberToInteger(\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Information\Typo3Version::class)->getVersion()) < 11000000) {
                     BackendUtility::fixVersioningPid($tableName, $row);
                 }
                 $pageUid = $row['pid'];

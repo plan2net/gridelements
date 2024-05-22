@@ -37,13 +37,17 @@ class ListTypeList extends AbstractItemsProcFunc
      * @var LayoutSetup
      */
     protected LayoutSetup $layoutSetup;
+    public function __construct(\GridElementsTeam\Gridelements\Backend\LayoutSetup $layoutSetup)
+    {
+        $this->layoutSetup = $layoutSetup;
+    }
 
     /**
      * ItemProcFunc for CType items
      *
      * @param array $params The array of parameters that is used to render the item list
      */
-    public function itemsProcFunc(array &$params)
+    public function itemsProcFunc(array &$params): void
     {
         if ((int)$params['row']['pid'] > 0) {
             $colPos = is_array($params['row']['colPos']) ? ($params['row']['colPos'][0] ?? 0) : $params['row']['colPos'];
@@ -80,7 +84,7 @@ class ListTypeList extends AbstractItemsProcFunc
      * @param int $gridContainerId The ID of the current container
      * @param int $gridColumn The grid column the element is a child of
      */
-    public function checkForAllowedListTypes(array &$items, int $pageId, int $pageColumn, int $gridContainerId, int $gridColumn)
+    public function checkForAllowedListTypes(array &$items, int $pageId, int $pageColumn, int $gridContainerId, int $gridColumn): void
     {
         if ($pageColumn >= 0 || $pageColumn === -2) {
             $column = $pageColumn ?: 0;
@@ -121,19 +125,9 @@ class ListTypeList extends AbstractItemsProcFunc
      *
      * @param int $pageId
      */
-    public function init(int $pageId = 0)
+    public function init(int $pageId = 0): void
     {
         parent::init();
         $this->injectLayoutSetup(GeneralUtility::makeInstance(LayoutSetup::class)->init($pageId));
-    }
-
-    /**
-     * injects layout setup
-     *
-     * @param LayoutSetup $layoutSetup
-     */
-    public function injectLayoutSetup(LayoutSetup $layoutSetup)
-    {
-        $this->layoutSetup = $layoutSetup;
     }
 }

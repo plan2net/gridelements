@@ -36,7 +36,7 @@ class ColPosList extends AbstractItemsProcFunc
      *
      * @param array $params The array of parameters that is used to render the item list
      */
-    public function itemsProcFunc(array &$params)
+    public function itemsProcFunc(array &$params): void
     {
         $this->init();
         if ((int)$params['row']['pid'] > 0) {

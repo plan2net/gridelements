@@ -54,10 +54,10 @@ class ProcessCmdmap extends AbstractDataHandler
         bool        &$commandIsProcessed,
         DataHandler $parentObj = null,
                     $pasteUpdate = false
-    )
+    ): void
     {
         $this->init($table, (string)$id, $parentObj);
-        $reference = (int)GeneralUtility::_GET('reference');
+        $reference = (int)$GLOBALS['TYPO3_REQUEST']->getQueryParams()['reference'];
 
         if (($command === 'copy' || $command === 'move') && !$commandIsProcessed && $table === 'tt_content' && !$this->getTceMain()->isImporting) {
             if ($reference === 1) {
@@ -73,7 +73,7 @@ class ProcessCmdmap extends AbstractDataHandler
                     $dataArray = array_merge($dataArray, $pasteUpdate);
                 }
 
-                $clipBoard = GeneralUtility::_GET('CB');
+                $clipBoard = $GLOBALS['TYPO3_REQUEST']->getQueryParams()['CB'];
                 if (!empty($clipBoard)) {
                     $updateArray = $clipBoard['update'];
                     if (!empty($updateArray)) {
@@ -104,15 +104,10 @@ class ProcessCmdmap extends AbstractDataHandler
             $queryBuilder = $this->getQueryBuilder();
             $originalElement = $queryBuilder
                 ->select('tx_gridelements_container', 'sys_language_uid')
-                ->from('tt_content')
-                ->where(
-                    $queryBuilder->expr()->eq(
-                        'uid',
-                        $queryBuilder->createNamedParameter($id, PDO::PARAM_INT)
-                    )
-                )
-                ->execute()
-                ->fetch();
+                ->from('tt_content')->where($queryBuilder->expr()->eq(
+                'uid',
+                $queryBuilder->createNamedParameter($id, PDO::PARAM_INT)
+            ))->executeQuery()->fetchAssociative();
 
             if (!empty($originalElement['tx_gridelements_container'])) {
                 $containerUpdateArray[$originalElement['tx_gridelements_container']] = -1;

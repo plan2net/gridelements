@@ -119,7 +119,7 @@ class LayoutSetup
     protected function loadLayoutSetup(int $pageId)
     {
         // Load page TSconfig.
-        if (TYPO3_MODE === 'FE') {
+        if (TYPO3 === 'FE') {
             $pageTSconfig = $GLOBALS['TSFE']->getPagesTSconfig();
         } else {
             $pageTSconfig = BackendUtility::getPagesTSconfig($pageId);
@@ -190,29 +190,16 @@ class LayoutSetup
             ->select('*')
             ->from('tx_gridelements_backend_layout')
             ->where(
-                $queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->comparison($pageTSconfigId, '=', 0),
-                        $queryBuilder->expr()->comparison($storagePid, '=', 0)
-                    ),
-                    $queryBuilder->expr()->orX(
-                        $queryBuilder->expr()->eq(
-                            'pid',
-                            $queryBuilder->createNamedParameter((int)$pageTSconfigId, PDO::PARAM_INT)
-                        ),
-                        $queryBuilder->expr()->eq(
-                            'pid',
-                            $queryBuilder->createNamedParameter($storagePid, PDO::PARAM_INT)
-                        )
-                    ),
-                    $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->comparison($pageTSconfigId, '=', 0),
-                        $queryBuilder->expr()->eq(
-                            'pid',
-                            $queryBuilder->createNamedParameter($pageId, PDO::PARAM_INT)
-                        )
-                    )
-                )
+                $queryBuilder->expr()->or($queryBuilder->expr()->and($queryBuilder->expr()->comparison($pageTSconfigId, '=', 0), $queryBuilder->expr()->comparison($storagePid, '=', 0)), $queryBuilder->expr()->or($queryBuilder->expr()->eq(
+                    'pid',
+                    $queryBuilder->createNamedParameter((int)$pageTSconfigId, PDO::PARAM_INT)
+                ), $queryBuilder->expr()->eq(
+                    'pid',
+                    $queryBuilder->createNamedParameter($storagePid, PDO::PARAM_INT)
+                )), $queryBuilder->expr()->and($queryBuilder->expr()->comparison($pageTSconfigId, '=', 0), $queryBuilder->expr()->eq(
+                    'pid',
+                    $queryBuilder->createNamedParameter($pageId, PDO::PARAM_INT)
+                )))
             )
             ->orderBy('sorting', 'ASC');
 
@@ -399,7 +386,7 @@ class LayoutSetup
      *
      * @param array $typoScriptSetup
      */
-    public function setTypoScriptSetup(array $typoScriptSetup)
+    public function setTypoScriptSetup(array $typoScriptSetup): void
     {
         $this->typoScriptSetup = $typoScriptSetup;
     }
@@ -419,7 +406,7 @@ class LayoutSetup
      *
      * @param string $flexformConfigurationPathAndFileName
      */
-    public function setFlexformConfigurationPathAndFileName(string $flexformConfigurationPathAndFileName)
+    public function setFlexformConfigurationPathAndFileName(string $flexformConfigurationPathAndFileName): void
     {
         $this->flexformConfigurationPathAndFileName = $flexformConfigurationPathAndFileName;
     }
@@ -493,7 +480,7 @@ class LayoutSetup
 
                 if ($source !== '') {
                     $iconRegistry = GeneralUtility::makeInstance(IconRegistry::class);
-                    if (StringUtility::endsWith($source, '.svg')) {
+                    if (\str_ends_with($source, '.svg')) {
                         $iconRegistry->registerIcon('gridelements-select-icon-' . $layoutId, SvgIconProvider::class, [
                             'source' => $source,
                         ]);
@@ -596,7 +583,7 @@ class LayoutSetup
      *
      * @param array $layoutSetup
      */
-    public function setLayoutSetup(array $layoutSetup)
+    public function setLayoutSetup(array $layoutSetup): void
     {
         $this->layoutSetup = $layoutSetup;
     }
@@ -607,7 +594,7 @@ class LayoutSetup
      * @param string $key
      * @param array $layoutSetup
      */
-    public function setSingleLayoutSetup(string $key, array $layoutSetup)
+    public function setSingleLayoutSetup(string $key, array $layoutSetup): void
     {
         $this->layoutSetup[$key] = $layoutSetup;
     }
@@ -731,7 +718,7 @@ class LayoutSetup
      *
      * @param LanguageService|null $languageService
      */
-    public function setLanguageService(LanguageService $languageService = null)
+    public function setLanguageService(LanguageService $languageService = null): void
     {
         $this->languageService = $languageService instanceof LanguageService ? $languageService : GeneralUtility::makeInstance(LanguageService::class);
         if ($this->getBackendUser()) {

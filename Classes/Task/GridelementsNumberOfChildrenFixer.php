@@ -36,9 +36,7 @@ class GridelementsNumberOfChildrenFixer extends AbstractTask
                     $queryBuilder->createNamedParameter('gridelements_pi1')
                 )
             )
-            ->orderBy('pid')
-            ->addOrderBy('uid')
-            ->execute();
+            ->orderBy('pid')->addOrderBy('uid')->executeQuery();
 
         if (!empty($containers)) {
             while ($container = $containers->fetchAssociative()) {
@@ -51,14 +49,10 @@ class GridelementsNumberOfChildrenFixer extends AbstractTask
 
                 $children = $queryBuilder
                     ->select('uid', 'pid', 'tx_gridelements_container')
-                    ->from('tt_content')
-                    ->where(
-                        $queryBuilder->expr()->eq(
-                            'tx_gridelements_container',
-                            $queryBuilder->createNamedParameter($container['uid'])
-                        )
-                    )
-                    ->execute()
+                    ->from('tt_content')->where($queryBuilder->expr()->eq(
+                    'tx_gridelements_container',
+                    $queryBuilder->createNamedParameter($container['uid'])
+                ))->executeQuery()
                     ->fetchAllAssociative();
 
                 if (empty($children)) {
@@ -72,14 +66,10 @@ class GridelementsNumberOfChildrenFixer extends AbstractTask
                         count($children),
                         true,
                         \PDO::PARAM_INT
-                    )
-                    ->where(
-                        $queryBuilder->expr()->eq(
-                            'uid',
-                            $container['uid']
-                        )
-                    )
-                    ->execute();
+                    )->where($queryBuilder->expr()->eq(
+                    'uid',
+                    $container['uid']
+                ))->executeStatement();
             }
         }
         return true;

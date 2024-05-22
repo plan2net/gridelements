@@ -46,12 +46,7 @@ class WizardItems implements NewContentElementWizardHookInterface
      */
     protected LayoutSetup $layoutSetup;
 
-    /**
-     * inject layout setup
-     *
-     * @param LayoutSetup $layoutSetup
-     */
-    public function injectLayoutSetup(LayoutSetup $layoutSetup)
+    public function __construct(\GridElementsTeam\Gridelements\Backend\LayoutSetup $layoutSetup)
     {
         $this->layoutSetup = $layoutSetup;
     }
@@ -63,7 +58,7 @@ class WizardItems implements NewContentElementWizardHookInterface
      * @param array $wizardItems The array containing the current status of the wizard item list before rendering
      * @param NewContentElementController $parentObject The parent object that triggered this hook
      */
-    public function manipulateWizardItems(&$wizardItems, &$parentObject)
+    public function manipulateWizardItems(&$wizardItems, &$parentObject): void
     {
         if (!$this->getBackendUser()->checkAuthMode('tt_content', 'CType', 'gridelements_pi1', $GLOBALS['TYPO3_CONF_VARS']['BE']['explicitADmode'])) {
             return;
@@ -72,10 +67,10 @@ class WizardItems implements NewContentElementWizardHookInterface
         $pageId = (int)$pageInfo['uid'];
         $this->init($pageId);
 
-        $container = (int)GeneralUtility::_GP('tx_gridelements_container');
-        $column = (int)GeneralUtility::_GP('tx_gridelements_columns');
-        $allowed_GP = (string)GeneralUtility::_GP('tx_gridelements_allowed');
-        $disallowed_GP = (string)GeneralUtility::_GP('tx_gridelements_disallowed');
+        $container = (int)($GLOBALS['TYPO3_REQUEST']->getParsedBody()['tx_gridelements_container'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['tx_gridelements_container'] ?? null);
+        $column = (int)($GLOBALS['TYPO3_REQUEST']->getParsedBody()['tx_gridelements_columns'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['tx_gridelements_columns'] ?? null);
+        $allowed_GP = (string)($GLOBALS['TYPO3_REQUEST']->getParsedBody()['tx_gridelements_allowed'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['tx_gridelements_allowed'] ?? null);
+        $disallowed_GP = (string)($GLOBALS['TYPO3_REQUEST']->getParsedBody()['tx_gridelements_disallowed'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['tx_gridelements_disallowed'] ?? null);
         if (!empty($allowed_GP) || !empty($disallowed_GP)) {
             $allowed = json_decode(base64_decode($allowed_GP), true) ?: [];
             if (!empty($allowed)) {
@@ -136,7 +131,7 @@ class WizardItems implements NewContentElementWizardHookInterface
      *
      * @param int $pageUid
      */
-    public function init(int $pageUid)
+    public function init(int $pageUid): void
     {
         $this->layoutSetup = GeneralUtility::makeInstance(LayoutSetup::class)->init($pageUid);
     }
@@ -148,7 +143,7 @@ class WizardItems implements NewContentElementWizardHookInterface
      * @param array $disallowed
      * @param array $wizardItems
      */
-    public function removeDisallowedWizardItems(array $allowed, array $disallowed, array &$wizardItems)
+    public function removeDisallowedWizardItems(array $allowed, array $disallowed, array &$wizardItems): void
     {
         foreach ($wizardItems as $key => $wizardItem) {
             if (empty($wizardItem['header'])) {
@@ -225,7 +220,7 @@ class WizardItems implements NewContentElementWizardHookInterface
      * @param array $gridItems
      * @param array $wizardItems
      */
-    public function addGridItemsToWizard(array &$gridItems, array &$wizardItems)
+    public function addGridItemsToWizard(array &$gridItems, array &$wizardItems): void
     {
         if (empty($gridItems)) {
             return;
@@ -247,13 +242,13 @@ class WizardItems implements NewContentElementWizardHookInterface
                 if (!empty($item['icon']) && is_array($item['icon']) && isset($item['icon'][1])) {
                     $item['iconIdentifierLarge'] = 'gridelements-large-' . $key;
                     $largeIcon = $item['icon'][1];
-                    if (StringUtility::beginsWith($largeIcon, '../typo3conf/ext/')) {
+                    if (\str_starts_with($largeIcon, '../typo3conf/ext/')) {
                         $largeIcon = str_replace('../typo3conf/ext/', 'EXT:', $largeIcon);
                     }
-                    if (StringUtility::beginsWith($largeIcon, '../uploads/tx_gridelements/')) {
+                    if (\str_starts_with($largeIcon, '../uploads/tx_gridelements/')) {
                         $largeIcon = str_replace('../', '', $largeIcon);
                     } else {
-                        if (!StringUtility::beginsWith($largeIcon, 'EXT:') && strpos(
+                        if (!\str_starts_with($largeIcon, 'EXT:') && strpos(
                             $largeIcon,
                             '/'
                         ) === false
@@ -262,7 +257,7 @@ class WizardItems implements NewContentElementWizardHookInterface
                         }
                     }
                     if (!empty($largeIcon)) {
-                        if (StringUtility::endsWith($largeIcon, '.svg')) {
+                        if (\str_ends_with($largeIcon, '.svg')) {
                             $iconRegistry->registerIcon($item['iconIdentifierLarge'], SvgIconProvider::class, [
                                 'source' => $largeIcon,
                             ]);
@@ -312,17 +307,17 @@ class WizardItems implements NewContentElementWizardHookInterface
             } elseif (!empty($item['icon']) && is_array($item['icon']) && isset($item['icon'][0])) {
                 $item['iconIdentifier'] = 'gridelements-' . $key;
                 $icon = $item['icon'][0];
-                if (StringUtility::beginsWith($icon, '../typo3conf/ext/')) {
+                if (\str_starts_with($icon, '../typo3conf/ext/')) {
                     $icon = str_replace('../typo3conf/ext/', 'EXT:', $icon);
                 }
-                if (StringUtility::beginsWith($icon, '../uploads/tx_gridelements/')) {
+                if (\str_starts_with($icon, '../uploads/tx_gridelements/')) {
                     $icon = str_replace('../', '', $icon);
                 } else {
-                    if (!StringUtility::beginsWith($icon, 'EXT:') && strpos($icon, '/') !== false) {
+                    if (!\str_starts_with($icon, 'EXT:') && strpos($icon, '/') !== false) {
                         $icon = GeneralUtility::resolveBackPath($item['icon'][0]);
                     }
                 }
-                if (StringUtility::endsWith($icon, '.svg')) {
+                if (\str_ends_with($icon, '.svg')) {
                     $iconRegistry->registerIcon($item['iconIdentifier'], SvgIconProvider::class, [
                         'source' => $icon,
                     ]);
@@ -362,7 +357,7 @@ class WizardItems implements NewContentElementWizardHookInterface
      * @param int $container
      * @param int $column
      */
-    public function addGridValuesToWizardItems(array &$wizardItems, int $container, int $column)
+    public function addGridValuesToWizardItems(array &$wizardItems, int $container, int $column): void
     {
         foreach ($wizardItems as $key => $wizardItem) {
             if (!isset($wizardItems[$key]['params'])) {
@@ -394,7 +389,7 @@ class WizardItems implements NewContentElementWizardHookInterface
      *
      * @param array $wizardItems
      */
-    public function removeEmptyHeadersFromWizard(array &$wizardItems)
+    public function removeEmptyHeadersFromWizard(array &$wizardItems): void
     {
         $headersWithElements = [];
         foreach ($wizardItems as $key => $wizardItem) {

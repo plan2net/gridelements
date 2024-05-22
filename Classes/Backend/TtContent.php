@@ -40,13 +40,17 @@ class TtContent
      * @var LayoutSetup
      */
     protected LayoutSetup $layoutSetup;
+    public function __construct(\GridElementsTeam\Gridelements\Backend\LayoutSetup $layoutSetup)
+    {
+        $this->layoutSetup = $layoutSetup;
+    }
 
     /**
      * ItemProcFunc for columns items
      *
      * @param array $params An array containing the items and parameters for the list of items
      */
-    public function columnsItemsProcFunc(array &$params)
+    public function columnsItemsProcFunc(array &$params): void
     {
         $this->init((int)$params['row']['pid']);
         $gridContainerId = is_array($params['row']['tx_gridelements_container'])
@@ -75,19 +79,9 @@ class TtContent
      *
      * @param int $pageId
      */
-    public function init(int $pageId)
+    public function init(int $pageId): void
     {
         $this->injectLayoutSetup(GeneralUtility::makeInstance(LayoutSetup::class)->init($pageId));
-    }
-
-    /**
-     * inject layout setup
-     *
-     * @param LayoutSetup $layoutSetup
-     */
-    public function injectLayoutSetup(LayoutSetup $layoutSetup)
-    {
-        $this->layoutSetup = $layoutSetup;
     }
 
     /**
@@ -97,7 +91,7 @@ class TtContent
      *
      * @param array $params An array containing the items and parameters for the list of items
      */
-    public function containerItemsProcFunc(array &$params)
+    public function containerItemsProcFunc(array &$params): void
     {
         $this->init((int)$params['row']['pid']);
         $possibleContainers = [];
@@ -126,7 +120,7 @@ class TtContent
      * @param array $params
      * @param array $possibleContainers
      */
-    public function removeItemsFromListOfSelectableContainers(array &$params, array &$possibleContainers)
+    public function removeItemsFromListOfSelectableContainers(array &$params, array &$possibleContainers): void
     {
         if (!empty($params['row']['CType'])) {
             $contentType = is_array($params['row']['CType']) ? $params['row']['CType'][0] : $params['row']['CType'];
@@ -153,7 +147,7 @@ class TtContent
      * @param array $possibleContainers : The result list containing the remaining containers after the check
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function lookForChildContainersRecursively(string $containerIds, array &$possibleContainers)
+    public function lookForChildContainersRecursively(string $containerIds, array &$possibleContainers): void
     {
         if (!$containerIds) {
             return;
@@ -162,18 +156,10 @@ class TtContent
         $queryBuilder = $this->getQueryBuilder();
         $childrenOnNextLevel = $queryBuilder
             ->select('uid', 'tx_gridelements_container')
-            ->from('tt_content')
-            ->where(
-                $queryBuilder->expr()->andX(
-                    $queryBuilder->expr()->eq('CType', $queryBuilder->createNamedParameter('gridelements_pi1')),
-                    $queryBuilder->expr()->in(
-                        'tx_gridelements_container',
-                        $queryBuilder->createNamedParameter($containerIds, Connection::PARAM_INT_ARRAY)
-                    )
-                )
-            )
-            ->execute()
-            ->fetchAll();
+            ->from('tt_content')->where($queryBuilder->expr()->and($queryBuilder->expr()->eq('CType', $queryBuilder->createNamedParameter('gridelements_pi1')), $queryBuilder->expr()->in(
+            'tx_gridelements_container',
+            $queryBuilder->createNamedParameter($containerIds, Connection::PARAM_INT_ARRAY)
+        )))->executeQuery()->fetchAllAssociative();
 
         if (!empty($childrenOnNextLevel) && !empty($possibleContainers)) {
             $containerIds = '';
@@ -215,7 +201,7 @@ class TtContent
      * @param string $itemUidList comma separated list of uids
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function deleteDisallowedContainers(array &$params, string $itemUidList = '')
+    public function deleteDisallowedContainers(array &$params, string $itemUidList = ''): void
     {
         $contentType = is_array($params['row']['CType']) ? $params['row']['CType'][0] : $params['row']['CType'];
         $listType = '';
@@ -228,14 +214,10 @@ class TtContent
             $queryBuilder = $this->getQueryBuilder();
             $containerQuery = $queryBuilder
                 ->select('uid', 'tx_gridelements_backend_layout')
-                ->from('tt_content')
-                ->where(
-                    $queryBuilder->expr()->in(
-                        'uid',
-                        $queryBuilder->createNamedParameter($itemUidList, Connection::PARAM_INT_ARRAY)
-                    )
-                )
-                ->execute();
+                ->from('tt_content')->where($queryBuilder->expr()->in(
+                'uid',
+                $queryBuilder->createNamedParameter($itemUidList, Connection::PARAM_INT_ARRAY)
+            ))->executeQuery();
             $containers = [];
             while ($container = $containerQuery->fetch()) {
                 $containers[$container['uid']] = $container;
@@ -296,7 +278,7 @@ class TtContent
      *
      * @param array $params An array containing the items and parameters for the list of items
      */
-    public function layoutItemsProcFunc(array &$params)
+    public function layoutItemsProcFunc(array &$params): void
     {
         $this->init((int)$params['row']['pid']);
         $layoutSelectItems = $this->layoutSetup->getLayoutSelectItems(

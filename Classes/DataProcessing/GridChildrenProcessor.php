@@ -240,7 +240,7 @@ class GridChildrenProcessor implements DataProcessorInterface
      * @param array $record
      * @param string $field Field name to convert
      */
-    public function initPluginFlexForm(array &$record, string $field = 'pi_flexform')
+    public function initPluginFlexForm(array &$record, string $field = 'pi_flexform'): void
     {
         // Converting flexform data into array:
         if (!empty($record)) {
@@ -261,7 +261,7 @@ class GridChildrenProcessor implements DataProcessorInterface
      * fetches values from the grid flexform and assigns them to virtual fields in the data array
      * @param array $record
      */
-    public function getPluginFlexFormData(array &$record)
+    public function getPluginFlexFormData(array &$record): void
     {
         if (!empty($record)) {
             $pluginFlexForm = $record['pi_flexform'] ?? [];

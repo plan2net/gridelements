@@ -77,21 +77,13 @@ class Helper implements SingletonInterface
             $queryBuilder = self::getQueryBuilder();
             $children = $queryBuilder
                 ->select(...$selectFieldArray)
-                ->from('tt_content')
-                ->where(
-                    $queryBuilder->expr()->andX(
-                        $queryBuilder->expr()->eq(
-                            'tx_gridelements_container',
-                            $queryBuilder->createNamedParameter($uid, PDO::PARAM_INT)
-                        ),
-                        $queryBuilder->expr()->eq(
-                            'pid',
-                            $queryBuilder->createNamedParameter($pid, PDO::PARAM_INT)
-                        )
-                    )
-                )
-                ->execute()
-                ->fetchAll();
+                ->from('tt_content')->where($queryBuilder->expr()->and($queryBuilder->expr()->eq(
+                'tx_gridelements_container',
+                $queryBuilder->createNamedParameter($uid, PDO::PARAM_INT)
+            ), $queryBuilder->expr()->eq(
+                'pid',
+                $queryBuilder->createNamedParameter($pid, PDO::PARAM_INT)
+            )))->executeQuery()->fetchAllAssociative();
 
             foreach ($children as $child) {
                 if (trim($sortingField) && isset($child[$sortingField]) && $sortingField !== 'sorting') {
@@ -176,15 +168,10 @@ class Helper implements SingletonInterface
         $queryBuilder = self::getQueryBuilder();
         $triggerElement = $queryBuilder
             ->select('pid')
-            ->from('tt_content')
-            ->where(
-                $queryBuilder->expr()->eq(
-                    'uid',
-                    $queryBuilder->createNamedParameter(abs($uid), PDO::PARAM_INT)
-                )
-            )
-            ->execute()
-            ->fetch();
+            ->from('tt_content')->where($queryBuilder->expr()->eq(
+            'uid',
+            $queryBuilder->createNamedParameter(abs($uid), PDO::PARAM_INT)
+        ))->executeQuery()->fetchAssociative();
         $pid = (int)$triggerElement['pid'];
         return is_array($triggerElement) && $pid ? $pid : 0;
     }

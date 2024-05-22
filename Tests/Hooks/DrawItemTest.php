@@ -17,7 +17,7 @@ class DrawItemTest extends UnitTestCase
      *
      * @test
      */
-    public function testGetLanguageService()
+    public function testGetLanguageService(): void
     {
         $GLOBALS['LANG'] = GeneralUtility::makeInstance(LanguageService::class);
         $drawItem = GeneralUtility::makeInstance(DrawItem::class);
@@ -30,7 +30,7 @@ class DrawItemTest extends UnitTestCase
      *
      * @test
      */
-    public function testGetIconFactory()
+    public function testGetIconFactory(): void
     {
         $drawItem = GeneralUtility::makeInstance(DrawItem::class);
         $iconFactory = GeneralUtility::makeInstance(IconFactory::class);
@@ -43,7 +43,7 @@ class DrawItemTest extends UnitTestCase
      *
      * @test
      */
-    public function testGetPageLayoutController()
+    public function testGetPageLayoutController(): void
     {
         $drawItem = GeneralUtility::makeInstance(DrawItem::class);
         $GLOBALS['SOBE'] = GeneralUtility::makeInstance(PageLayoutController::class);
@@ -56,7 +56,7 @@ class DrawItemTest extends UnitTestCase
      *
      * @test
      */
-    public function testGetBackendUser()
+    public function testGetBackendUser(): void
     {
         $drawItem = GeneralUtility::makeInstance(DrawItem::class);
         $GLOBALS['BE_USER'] = GeneralUtility::makeInstance(BackendUserAuthentication::class);

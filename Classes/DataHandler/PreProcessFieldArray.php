@@ -61,7 +61,7 @@ class PreProcessFieldArray extends AbstractDataHandler
      * @param string $id The parent uid of either the page or the container we are currently working on
      * @param DataHandler $parentObj The parent object that triggered this hook
      */
-    public function execute_preProcessFieldArray(array &$fieldArray, string $table, string $id, DataHandler $parentObj)
+    public function execute_preProcessFieldArray(array &$fieldArray, string $table, string $id, DataHandler $parentObj): void
     {
         if ($table === 'tt_content') {
             $action = '';
@@ -91,9 +91,9 @@ class PreProcessFieldArray extends AbstractDataHandler
      * @param string $id
      * @param bool $new
      */
-    public function processFieldArrayForTtContent(array &$fieldArray, string $id = '0', bool $new = false, $action = '')
+    public function processFieldArrayForTtContent(array &$fieldArray, string $id = '0', bool $new = false, $action = ''): void
     {
-        $pid = (int)GeneralUtility::_GET('DDinsertNew');
+        $pid = (int)$GLOBALS['TYPO3_REQUEST']->getQueryParams()['DDinsertNew'];
 
         if (abs($pid) > 0) {
             $this->setDefaultFieldValues($fieldArray, $pid);
@@ -109,7 +109,7 @@ class PreProcessFieldArray extends AbstractDataHandler
      * @param array $fieldArray
      * @param int $uidPid
      */
-    public function setDefaultFieldValues(array &$fieldArray, int $uidPid = 0)
+    public function setDefaultFieldValues(array &$fieldArray, int $uidPid = 0): void
     {
         // Default values:
         $newRow = []; // Used to store default values as found here:
@@ -145,8 +145,8 @@ class PreProcessFieldArray extends AbstractDataHandler
         }
 
         // Default values as submitted:
-        $this->definitionValues = GeneralUtility::_GP('defVals') ?? [];
-        $this->overrideValues = GeneralUtility::_GP('overrideVals') ?? [];
+        $this->definitionValues = ($GLOBALS['TYPO3_REQUEST']->getParsedBody()['defVals'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['defVals'] ?? null) ?? [];
+        $this->overrideValues = ($GLOBALS['TYPO3_REQUEST']->getParsedBody()['overrideVals'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['overrideVals'] ?? null) ?? [];
         if (empty($this->definitionValues) && !empty($this->overrideValues)) {
             $this->definitionValues = $this->overrideValues;
         }
@@ -188,7 +188,7 @@ class PreProcessFieldArray extends AbstractDataHandler
      *
      * @param array $fieldArray
      */
-    public function getDefaultFlexformValues(array &$fieldArray)
+    public function getDefaultFlexformValues(array &$fieldArray): void
     {
         if (!empty($GLOBALS['TCA']['tt_content']['columns']['pi_flexform']['config']['ds'])) {
             foreach ($GLOBALS['TCA']['tt_content']['columns']['pi_flexform']['config']['ds'] as $key => $dataStructure) {
@@ -249,7 +249,7 @@ class PreProcessFieldArray extends AbstractDataHandler
      * @param string $contentId
      * @param bool $new
      */
-    public function setFieldEntries(array &$fieldArray, string $contentId = '0', bool $new = false, $action = '')
+    public function setFieldEntries(array &$fieldArray, string $contentId = '0', bool $new = false, $action = ''): void
     {
         $containerUpdateArray = [];
         if (isset($fieldArray['tx_gridelements_container'])) {
@@ -286,7 +286,7 @@ class PreProcessFieldArray extends AbstractDataHandler
      *
      * @param array $fieldArray
      */
-    public function setFieldEntriesForGridContainers(array &$fieldArray, $action)
+    public function setFieldEntriesForGridContainers(array &$fieldArray, $action): void
     {
         if (!empty($fieldArray['tx_gridelements_container'])
             && isset($fieldArray['colPos']) && (int)$fieldArray['colPos'] !== -1) {
@@ -357,15 +357,10 @@ class PreProcessFieldArray extends AbstractDataHandler
                 'tt_content',
                 't2',
                 $queryBuilder->expr()->eq('t1.uid', $queryBuilder->quoteIdentifier('t2.tx_gridelements_container'))
-            )
-            ->where(
-                $queryBuilder->expr()->eq(
-                    't2.uid',
-                    $queryBuilder->createNamedParameter($contentId, PDO::PARAM_INT)
-                )
-            )
-            ->execute()
-            ->fetch();
+            )->where($queryBuilder->expr()->eq(
+            't2.uid',
+            $queryBuilder->createNamedParameter($contentId, PDO::PARAM_INT)
+        ))->executeQuery()->fetchAssociative();
         if (!empty($parent)) {
             if ($parent['tx_gridelements_container'] > 0) {
                 $colPos = $this->checkForRootColumn($parent['tx_gridelements_container']);

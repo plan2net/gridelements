@@ -215,10 +215,7 @@ class ShortcutPreviewRenderer extends StandardContentPreviewRenderer implements 
                     $queryBuilder->createNamedParameter([0, -1], Connection::PARAM_INT_ARRAY)
                 )
             )
-            ->addOrderBy('colPos')
-            ->addOrderBy('sorting')
-            ->execute()
-            ->fetchAll();
+            ->addOrderBy('colPos')->addOrderBy('sorting')->executeQuery()->fetchAllAssociative();
 
         $sortedItemList = array_flip($itemList);
 
@@ -278,10 +275,7 @@ class ShortcutPreviewRenderer extends StandardContentPreviewRenderer implements 
                         'uid',
                         $queryBuilder->createNamedParameter((int)$shortcutItem, PDO::PARAM_INT)
                     )
-                )
-                ->setMaxResults(1)
-                ->execute()
-                ->fetch();
+                )->setMaxResults(1)->executeQuery()->fetchAssociative();
 
             if (!empty($this->extensionConfiguration['overlayShortcutTranslation']) && $language > 0) {
                 $translatedItem = BackendUtility::getRecordLocalization('tt_content', $item['uid'], $language);

@@ -14,7 +14,7 @@ class PluginTest extends UnitTestCase
      *
      * @test
      */
-    public function testGetPageRenderer()
+    public function testGetPageRenderer(): void
     {
         $gridelements = GeneralUtility::makeInstance(Gridelements::class);
         $pageRenderer = GeneralUtility::makeInstance(PageRenderer::class);

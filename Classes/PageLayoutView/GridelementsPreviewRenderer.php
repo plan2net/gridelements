@@ -84,7 +84,7 @@ class GridelementsPreviewRenderer extends StandardContentPreviewRenderer impleme
     /**
      * Processes the collapsed states of Gridelements columns and removes columns with 0 values
      */
-    public function cleanupCollapsedStatesInUC()
+    public function cleanupCollapsedStatesInUC(): void
     {
         $backendUser = $this->getBackendUser();
         if (!empty($backendUser->uc['moduleData']['page']['gridelementsCollapsedColumns'])

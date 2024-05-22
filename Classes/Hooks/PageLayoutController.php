@@ -73,7 +73,7 @@ class PageLayoutController
      * @param array $parameters An array of available parameters
      * @param \TYPO3\CMS\Backend\Controller\PageLayoutController $pageLayoutController The parent object that triggered this hook
      */
-    public function drawHeaderHook(array $parameters, \TYPO3\CMS\Backend\Controller\PageLayoutController $pageLayoutController)
+    public function drawHeaderHook(array $parameters, \TYPO3\CMS\Backend\Controller\PageLayoutController $pageLayoutController): void
     {
         $iconFactory = GeneralUtility::makeInstance(IconFactory::class);
         $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Gridelements/GridElementsOnReady');
@@ -115,7 +115,7 @@ class PageLayoutController
                 }
             ';
 
-        $id = (int)GeneralUtility::_GP('id');
+        $id = (int)($GLOBALS['TYPO3_REQUEST']->getParsedBody()['id'] ?? $GLOBALS['TYPO3_REQUEST']->getQueryParams()['id'] ?? null);
         $layout = GeneralUtility::callUserFunction(
             BackendLayoutView::class . '->getSelectedBackendLayout',
             $id,
